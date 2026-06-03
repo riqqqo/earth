@@ -175,37 +175,42 @@
         }
 
         .btn-edit {
-            background: #f39c12;
-            color: white;
-            border: none;
+            background: transparent;
+            color: #2980b9;
+            border: 1.5px solid #2980b9;
             padding: 5px 10px;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 12px;
             white-space: nowrap;
             display: inline-block;
             margin-right: 4px;
+            transition: all 0.2s;
         }
 
         .btn-edit:hover {
-            background: #d68910;
+            background: #2980b9;
+            color: white;
         }
 
         .btn-delete {
-            background: #e74c3c;
-            color: white;
-            border: none;
+            background: transparent;
+            color: #999;
+            border: 1.5px solid #ddd;
             padding: 5px 10px;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 12px;
             white-space: nowrap;
             display: inline-block;
             margin-left: 4px;
+            transition: all 0.2s;
         }
 
         .btn-delete:hover {
-            background: #c0392b;
+            background: #e74c3c;
+            color: white;
+            border-color: #e74c3c;
         }
 
         .actions-cell {
@@ -214,7 +219,9 @@
         }
 
         .detail-cell {
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         /* ===== MODAL ===== */
@@ -374,34 +381,74 @@
             top: 0;
             right: 0;
             bottom: 0;
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.92);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            gap: 16px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-            color: #1a5276;
-            font-size: 14px;
+            gap: 20px;
+            opacity: 1;
+            transition: opacity 0.3s ease;
         }
 
         #loader.hidden {
-            display: none;
+            opacity: 0;
+            pointer-events: none;
         }
 
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #ddd;
-            border-top: 4px solid #2980b9;
+        .loader-ring {
+            width: 56px;
+            height: 56px;
+            position: relative;
+        }
+
+        .loader-ring svg {
+            width: 56px;
+            height: 56px;
+            animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        }
+
+        .loader-ring .inner-dot {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            background: #2980b9;
             border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+            animation: pulse 1.2s ease-in-out infinite;
         }
 
         @keyframes spin {
             to {
                 transform: rotate(360deg);
             }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 0.6;
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.6);
+                opacity: 1;
+            }
+        }
+
+        .loader-text {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            background: linear-gradient(135deg, #1a5276, #2980b9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 0.5px;
         }
 
         @media (max-width: 800px) {
@@ -560,8 +607,15 @@
 
     <!-- LOADER -->
     <div id="loader">
-        <div class="spinner"></div>
-        <div>Загрузка данных...</div>
+        <div class="loader-ring">
+            <svg viewBox="0 0 56 56">
+                <circle cx="28" cy="28" r="24" fill="none" stroke="#e8e8e8" stroke-width="3" />
+                <circle cx="28" cy="28" r="24" fill="none" stroke="#2980b9" stroke-width="3" stroke-dasharray="75 150"
+                    stroke-linecap="round" />
+            </svg>
+            <div class="inner-dot"></div>
+        </div>
+        <span class="loader-text">Загрузка данных...</span>
     </div>
 
     <!-- DETAIL MODAL -->
@@ -723,7 +777,6 @@
 
             showLoader();
             try {
-                // POST without custom Content-Type to avoid CORS preflight
                 const resp = await fetch(SCRIPT_URL + '?t=' + Date.now(), {
                     method: 'POST',
                     body: JSON.stringify(data)
@@ -928,7 +981,6 @@
                 if (result.success) {
                     alert('Участок удалён. Обновите страницу для обновления данных.');
                 } else {
-                    // If delete not supported, remove locally
                     alert('Удаление через API не поддерживается текущим скриптом. Удалите строку в Google Таблице вручную.');
                 }
             } catch (err) {
