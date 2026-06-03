@@ -531,65 +531,41 @@
     </div>
 
     <script>
-        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSjNOm1Jf9AgCfVyY3cTa65INB_BNMSrUKIyDFZmm9ZTf999_hTxEERe3GVgvkDRsP0_N3n7tNcnY54/pub?output=csv';
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyYMMMQSLxvQlyMG-2f83VeA8OdhkrtjM7DhaC4HWtTfr0xMEVp3CPMyVcJW2rKPBNX/exec';
 
         const FIELD_KEYS = ['кад', 'авито', 'пкк', 'широта', 'долгота', 'площадь_сот', 'цена', 'статус', 'адрес', 'площадь_квм', 'дата_кн', 'кадастровая_стоимость', 'категория_земель', 'вид_использования', 'форма_собственности', 'примечания'];
         const FIELD_LABELS = ['Кадастровый номер', 'Avito (ссылка)', 'ПКК (ссылка)', 'Широта', 'Долгота', 'Площадь (сот.)', 'Цена (руб.)', 'Статус', 'Адрес', 'Площадь (кв.м)', 'Дата КН', 'Кадастровая стоимость', 'Категория земель', 'Вид использования', 'Форма собственности', 'Примечания'];
 
-        // ===== CSV PARSER =====
+        // ===== DATA LOADER: GET from Apps Script =====
         async function loadPlots() {
-            const resp = await fetch(CSV_URL, { cache: 'no-store' });
-            const text = await resp.text();
-            const lines = text.trim().split('\n');
-            if (lines.length < 2) return [];
-
-            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-            const plots = [];
-
-            for (let i = 1; i < lines.length; i++) {
-                const cells = parseCSVLine(lines[i]);
-                if (cells.length < 13) continue;
-
-                const id = parseInt(cells[0], 10); if (!id) continue;
-                const cad = cells[1] || '';
-                const avito = cells[2] || '';
-                const pmap = cells[3] || '';
-                const lat = parseFloat(cells[4]); const lng = parseFloat(cells[5]);
-                if (!lat || !lng) continue;
-                const sot = parseFloat(cells[6].replace(',', '.')) || 0;
-                const price = parseInt((cells[7] || '0').replace(/\s/g, ''), 10) || 0;
-                const status = cells[8] || '';
-                const addr = cells[9] || '';
-                const area = (cells[10] || '') + ' кв. м';
-                const date = cells[11] || '';
-                const cadCost = parseInt((cells[12] || '0').replace(/\s/g, ''), 10) || 0;
-                const category = cells[13] || '';
-                const useType = cells[14] || '';
-                const ownership = cells[15] || '';
-                const note = cells[16] || '';
-
-                plots.push({ id, cad, avito, pmap, lat, lng, sot, price, status, addr, area, date, cadCost, category, useType, ownership, note });
+            try {
+                const resp = await fetch(SCRIPT_URL, { cache: 'no-store' });
+                if (!resp.ok) return [];
+                const raw = await resp.json();
+                if (!Array.isArray(raw)) return [];
+                return raw.map(r => ({
+                    id: r.id,
+                    cad: r.кад || '',
+                    avito: r.авито || '',
+                    pmap: r.пкк || '',
+                    lat: parseFloat(r.широта) || 0,
+                    lng: parseFloat(r.долгота) || 0,
+                    sot: parseFloat(r.площадь_сот) || 0,
+                    price: parseFloat(r.цена) || 0,
+                    status: r.статус || '',
+                    addr: r.адрес || '',
+                    area: (r.площадь_квм || '') + ' кв. м',
+                    date: r.дата_кн || '',
+                    cadCost: parseFloat(r.кадастровая_стоимость) || 0,
+                    category: r.категория_земель || '',
+                    useType: r.вид_использования || '',
+                    ownership: r.форма_собственности || '',
+                    note: r.примечания || ''
+                }));
+            } catch (e) {
+                console.error('loadPlots error:', e);
+                return [];
             }
-            return plots;
-        }
-
-        function parseCSVLine(line) {
-            const result = [];
-            let current = '';
-            let inQuotes = false;
-            for (const ch of line) {
-                if (ch === '"') {
-                    inQuotes = !inQuotes;
-                } else if (ch === ',' && !inQuotes) {
-                    result.push(current.trim());
-                    current = '';
-                } else {
-                    current += ch;
-                }
-            }
-            result.push(current.trim());
-            return result;
         }
 
         // ===== MODAL =====
