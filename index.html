@@ -725,6 +725,78 @@
             document.getElementById('modalOverlay').classList.remove('active');
         }
 
+        // ===== FIELD TYPE DEFINITIONS =====
+        const SELECT_OPTIONS = {
+            'статус': ['Учтённый', 'Ранее учтённый', 'Временный', 'Аннулированный', 'Архивный'],
+            'категория_земель': [
+                'Земли населенных пунктов',
+                'Земли сельскохозяйственного назначения',
+                'Земли промышленности, энергетики, транспорта, связи',
+                'Земли особо охраняемых территорий и объектов',
+                'Земли лесного фонда',
+                'Земли водного фонда',
+                'Земли запаса'
+            ],
+            'вид_использования': [
+                'Для индивидуального жилищного строительства',
+                'Для ведения личного подсобного хозяйства',
+                'Для садоводства',
+                'Для огородничества',
+                'Для сельскохозяйственного производства',
+                'Для крестьянско-фермерского хозяйства',
+                'Для дачного строительства',
+                'Для многоэтажной жилой застройки'
+            ],
+            'форма_собственности': ['Частная', 'Государственная', 'Муниципальная', 'Иная']
+        };
+
+        const NUMBER_FIELDS = ['широта', 'долгота', 'площадь_сот', 'цена', 'площадь_квм', 'кадастровая_стоимость'];
+        const DATE_FIELDS = ['дата_кн'];
+
+        // Convert DD.MM.YYYY → YYYY-MM-DD for date input
+        function toDateInput(val) {
+            if (!val) return '';
+            const m = String(val).match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+            if (m) return m[3] + '-' + m[2] + '-' + m[1];
+            // Already ISO or other — try parse
+            const d = new Date(val);
+            if (!isNaN(d.getTime())) {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return year + '-' + month + '-' + day;
+            }
+            return '';
+        }
+
+        // Convert YYYY-MM-DD → DD.MM.YYYY when submitting
+        function fromDateInput(val) {
+            if (!val) return '';
+            const m = val.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (m) return m[3] + '.' + m[2] + '.' + m[1];
+            return val;
+        }
+
+        function makeField(k, v) {
+            const label = FIELD_LABELS[FIELD_KEYS.indexOf(k)];
+            if (SELECT_OPTIONS[k]) {
+                const options = SELECT_OPTIONS[k].map(opt =>
+                    `<option value="${escapeHtml(opt)}" ${v === opt ? 'selected' : ''}>${opt}</option>`
+                ).join('');
+                return `<div class="form-group"><label>${label}</label><select id="fld_${k}" style="width:100%;padding:7px 10px;border:1px solid #ccc;border-radius:5px;font-size:13px;font-family:inherit">${options}</select></div>`;
+            }
+            if (k === 'примечания' || k === 'адрес') {
+                return `<div class="form-group"><label>${label}</label><textarea id="fld_${k}">${escapeHtml(v)}</textarea></div>`;
+            }
+            if (DATE_FIELDS.includes(k)) {
+                return `<div class="form-group"><label>${label}</label><input type="date" id="fld_${k}" value="${toDateInput(v)}"></div>`;
+            }
+            if (NUMBER_FIELDS.includes(k)) {
+                return `<div class="form-group"><label>${label}</label><input type="number" step="any" id="fld_${k}" value="${v}"></div>`;
+            }
+            return `<div class="form-group"><label>${label}</label><input type="text" id="fld_${k}" value="${escapeHtml(v)}"></div>`;
+        }
+
         // ===== EDIT FORM =====
         function openEditForm(plot) {
             const overlay = document.getElementById('editModalOverlay');
@@ -749,22 +821,8 @@
             for (const pair of fieldPairs) {
                 const k1 = pair[0]; const k2 = pair[1];
                 const i1 = FIELD_KEYS.indexOf(k1); const i2 = FIELD_KEYS.indexOf(k2);
-                const l1 = FIELD_LABELS[i1]; const l2 = FIELD_LABELS[i2];
                 const v1 = values[i1]; const v2 = values[i2];
-
-                if (k1 === 'примечания' || k1 === 'адрес') {
-                    rowsHTML += `<div class="form-row">
-                        <div class="form-group"><label>${l1}</label><textarea id="fld_${k1}">${escapeHtml(v1)}</textarea></div>
-                        <div class="form-group"><label>${l2}</label><textarea id="fld_${k2}">${escapeHtml(v2)}</textarea></div>
-                    </div>`;
-                } else {
-                    rowsHTML += `<div class="form-row">
-                        <div class="form-group"><label>${l1}</label><input type="text" id="fld_${k1}" value="${escapeHtml(v1)}">
-                        </div>
-                        <div class="form-group"><label>${l2}</label><input type="text" id="fld_${k2}" value="${escapeHtml(v2)}">
-                        </div>
-                    </div>`;
-                }
+                rowsHTML += `<div class="form-row">${makeField(k1, v1)}${makeField(k2, v2)}</div>`;
             }
 
             content.innerHTML = `
