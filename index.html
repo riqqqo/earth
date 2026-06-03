@@ -192,126 +192,167 @@
     </div>
 
     <script>
-        const plots = [
-            { id: 1, cad: "43:12:330132:2032", avito: "https://www.avito.ru/kirovskaya_oblast_kirov/zemelnye_uchastki/uchastok_10_sot._izhs_7582262618", pmap: "https://map.ru/pkk?kad=43:12:330132:2032&z=18", lat: 58.478476, lng: 49.551543, sot: 10, price: 550000, status: "Учтённый", addr: "д. Головизнинцы, ул. Евгения Фёдорова", area: "1 000 кв. м", date: "02.12.2024", cadCost: 125845 },
-            { id: 2, cad: "43:12:330132:2083", avito: "https://www.avito.ru/kirovskaya_oblast_kirov/zemelnye_uchastki/uchastok_128_sot._izhs_7532030909", pmap: "https://map.ru/pkk?kad=43:12:330132:2083&z=18", lat: 58.486355, lng: 49.541945, sot: 12.8, price: 640000, status: "Учтённый", addr: "Кирово-Чепецкий р-н, с.п. Пасеговское", area: "1 280 кв. м", date: "15.08.2025", cadCost: 167048 },
-            { id: 3, cad: "43:12:330132:1715", avito: "https://www.avito.ru/kirovskaya_oblast_kirov/zemelnye_uchastki/uchastok_18_sot._izhs_4052448444", pmap: "https://map.ru/pkk?kad=43:12:330132:1715&z=18", lat: 58.476061, lng: 49.552014, sot: 18, price: 650000, status: "Учтённый", addr: "д. Головизнинцы, ул. Алексея Трёшникова, з/у 18", area: "1 803 кв. м", date: "25.05.2021", cadCost: 213285 },
-            { id: 4, cad: "43:12:330132:1717", avito: "https://www.avito.ru/kirovskaya_oblast_kirov/zemelnye_uchastki/uchastok_18_sot._izhs_4052448444", pmap: "https://map.ru/pkk?kad=43:12:330132:1717&z=18", lat: 58.475807, lng: 49.552619, sot: 18, price: 650000, status: "Учтённый", addr: "д. Головизнинцы, ул. Алексея Трёшникова, з/у 20", area: "1 912 кв. м", date: "25.05.2021", cadCost: 226179 },
-            { id: 5, cad: "43:12:330132:1713", avito: "https://www.avito.ru/kirovskaya_oblast_kirov/zemelnye_uchastki/uchastok_18_sot._izhs_8142920212", pmap: "https://map.ru/pkk?kad=43:12:330132:1713&z=18", lat: 58.476544, lng: 49.550865, sot: 18, price: 670000, status: "Учтённый", addr: "д. Головизнинцы, ул. Алексея Трёшникова, з/у 14", area: "1 829 кв. м", date: "25.05.2021", cadCost: 216361 },
-            { id: 6, cad: "43:12:330132:1737", avito: "https://www.avito.ru/kirovskaya_oblast_kirov/zemelnye_uchastki/uchastok_15_sot._izhs_7600315287", pmap: "https://map.ru/pkk?kad=43:12:330132:1737&z=18", lat: 58.479417, lng: 49.557314, sot: 15, price: 700000, status: "Учтённый", addr: "д. Головизнинцы, ул. Василия Сидорова, з/у 11", area: "1 500 кв. м", date: "25.05.2021", cadCost: 188768 },
-            { id: 7, cad: "43:12:330132:1712", avito: "https://www.avito.ru/kirovskaya_oblast_kirov/zemelnye_uchastki/uchastok_20_sot._izhs_3008970358", pmap: "https://map.ru/pkk?kad=43:12:330132:1712&z=18", lat: 58.476788, lng: 49.550295, sot: 20, price: 799000, status: "Учтённый", addr: "д. Головизнинцы, ул. Алексея Трёшникова, з/у 12", area: "1 850 кв. м", date: "25.05.2021", cadCost: 218845 },
-            { id: 8, cad: "43:12:330132:1708", avito: "https://www.avito.ru/kirovskaya_oblast_kirov/zemelnye_uchastki/uchastok_20_sot._izhs_3008970358", pmap: "https://map.ru/pkk?kad=43:12:330132:1708&z=18", lat: 58.477759, lng: 49.548031, sot: 20, price: 799000, status: "Учтённый", addr: "д. Головизнинцы, ул. Алексея Трёшникова, з/у 4", area: "1 822 кв. м", date: "25.05.2021", cadCost: 215533 },
-            { id: 9, cad: "43:12:330132:1739", avito: "https://www.avito.ru/kirovskaya_oblast_kirov/zemelnye_uchastki/uchastok_215_sot._izhs_7373227431", pmap: "https://map.ru/pkk?kad=43:12:330132:1739&z=18", lat: 58.479052, lng: 49.558543, sot: 21.5, price: 890000, status: "Учтённый", addr: "д. Головизнинцы, ул. Василия Сидорова, з/у 15", area: "2 156 кв. м", date: "25.05.2021", cadCost: 255043 },
-            { id: 10, cad: "43:12:330132:915", avito: "https://www.avito.ru/kirovskaya_oblast_kirov/zemelnye_uchastki/uchastok_20_sot._izhs_7246099205", pmap: "https://map.ru/pkk?kad=43:12:330132:915&z=18", lat: 58.496812, lng: 49.550843, sot: 20, price: 950000, status: "Учтённый", addr: "Кировская обл., Кирово-Чепецкий р-н, д. Головизнинцы", area: "1 997 кв. м", date: "19.02.2016", cadCost: 236234 },
-        ];
+        // ===== PARSER: load data from земельные-участки.md =====
+        async function loadPlots() {
+            const resp = await fetch('земельные-участки.md');
+            const text = await resp.text();
+            const lines = text.split('\n');
 
-        const prices = plots.map(p => p.price);
-        const minPrice = Math.min(...prices);
-        const maxPrice = Math.max(...prices);
+            // Find the table separator line (contains |---|---|...)
+            let sepIdx = -1;
+            for (let i = 0; i < lines.length; i++) {
+                if (/^\|[\s\-:|]+\|/.test(lines[i])) { sepIdx = i; break; }
+            }
+            if (sepIdx === -1) return [];
 
-        function priceColor(price) {
-            const t = (price - minPrice) / (maxPrice - minPrice || 1);
-            return `hsl(${Math.round(120 * (1 - t))}, 70%, 45%)`;
+            const parseCell = (s) => s.replace(/^\s*\|\s*/, '').replace(/\s*\|\s*$/, '').trim();
+            const parseLink = (s) => { const m = s.match(/\[.*?\]\((.*?)\)/); return m ? m[1] : ''; };
+            const parseNumber = (s) => parseFloat(s.replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+            const parseInt = (s) => parseInt(s.replace(/[^\d]/g, ''), 10) || 0;
+
+            const plots = [];
+            for (let i = sepIdx + 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line.startsWith('|')) continue;
+                const cells = line.split('|');
+                // cells[0] empty, [1]=№, [2]=cad, [3]=Avito link, [4]=map link, [5]=coordinates, [6]=sot, [7]=price, [8]=status, [9]=category, [10]=use, [11]=ownership, [12]=addr, [13]=area, [14]=date, [15]=cadCost, [16]=note
+                if (cells.length < 16) continue;
+
+                const id = parseInt(cells[1]); if (!id) continue;
+                const cad = parseCell(cells[2]);
+                const avito = parseLink(cells[3]);
+                const pmap = parseLink(cells[4]);
+                const coords = parseCell(cells[5]).split(/[,\s]+/);
+                const lat = parseFloat(coords[0]); const lng = parseFloat(coords[1]);
+                if (!lat || !lng) continue;
+                const sot = parseNumber(cells[6]);
+                const price = parseInt(cells[7]);
+                const status = parseCell(cells[8]);
+                const addr = parseCell(cells[12]);
+                const area = parseCell(cells[13]);
+                const date = parseCell(cells[14]);
+                const cadCost = parseInt(cells[15]);
+
+                plots.push({ id, cad, avito, pmap, lat, lng, sot, price, status, addr, area, date, cadCost });
+            }
+            return plots;
         }
 
-        // ===== TABLE =====
-        const tbody = document.querySelector('#dataTable tbody');
-        plots.forEach(p => {
-            const pricePerSotka = Math.round(p.price / p.sot);
-            const ratio = (p.price / p.cadCost).toFixed(1);
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td><b>${p.id}</b></td><td>${p.cad}</td><td><a href="${p.avito}" target="_blank">Avito</a></td><td><a href="${p.pmap}" target="_blank">ПКК</a></td><td>${p.sot}</td><td>${p.price.toLocaleString('ru-RU')} ₽</td><td>${pricePerSotka.toLocaleString('ru-RU')} ₽ <small style="color:#888">(×${ratio})</small></td><td>${p.status}</td><td>${p.addr}</td><td>${p.area}</td><td>${p.date}</td><td>${p.cadCost.toLocaleString('ru-RU')} ₽</td>`;
-            tbody.appendChild(tr);
-        });
+        // ===== INIT =====
+        async function init() {
+            const plots = await loadPlots();
+            if (!plots.length) { document.body.innerHTML += '<p style="padding:20px;color:red">⚠ Ошибка загрузки данных из земельные-участки.md</p>'; return; }
 
-        // ===== CHARTS =====
-        new Chart(document.getElementById('chartPricePerSotka'), {
-            type: 'bar',
-            data: {
-                labels: plots.map(p => `№${p.id} (${p.sot} сот.)`),
-                datasets: [{
-                    label: 'Цена за сотку (руб.)',
-                    data: plots.map(p => Math.round(p.price / p.sot)),
-                    backgroundColor: plots.map(p => priceColor(p.price)),
-                    borderRadius: 6
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: true,
-                plugins: { legend: { display: false } },
-                scales: { y: { ticks: { callback: v => Math.round(v).toLocaleString('ru-RU') + ' ₽' } } }
+            const prices = plots.map(p => p.price);
+            const minPrice = Math.min(...prices);
+            const maxPrice = Math.max(...prices);
+
+            function priceColor(price) {
+                const t = (price - minPrice) / (maxPrice - minPrice || 1);
+                return `hsl(${Math.round(120 * (1 - t))}, 70%, 45%)`;
             }
-        });
 
-        new Chart(document.getElementById('chartCompare'), {
-            type: 'bar',
-            data: {
-                labels: plots.map(p => `№${p.id}`),
-                datasets: [
-                    { label: 'Цена продавца', data: plots.map(p => p.price), backgroundColor: '#2980b9', borderRadius: 4 },
-                    { label: 'Кадастровая стоимость', data: plots.map(p => p.cadCost), backgroundColor: '#bdc3c7', borderRadius: 4 }
-                ]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: true,
-                plugins: { legend: { position: 'bottom', labels: { boxWidth: 14, padding: 16, font: { size: 11 } } } },
-                scales: { y: { ticks: { callback: v => Math.round(v).toLocaleString('ru-RU') + ' ₽' } } }
-            }
-        });
-
-        // ===== LEAFLET MAP (OpenStreetMap) =====
-        const map = L.map('map').setView([58.480, 49.552], 14);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxZoom: 19
-        }).addTo(map);
-
-        const markers = L.markerClusterGroup({
-            disableClusteringAtZoom: 16,
-            maxClusterRadius: 60
-        });
-
-        plots.forEach(p => {
-            const color = priceColor(p.price);
-            const pricePerSotka = Math.round(p.price / p.sot);
-
-            const icon = L.divIcon({
-                className: 'custom-marker',
-                html: `<div style="
-                    width:24px;height:24px;border-radius:50%;
-                    background:${color};border:3px solid white;
-                    box-shadow: 0 1px 6px rgba(0,0,0,0.4);
-                    "></div>`,
-                iconSize: [24, 24],
-                iconAnchor: [12, 12],
-                popupAnchor: [0, -14]
+            // ===== TABLE =====
+            const tbody = document.querySelector('#dataTable tbody');
+            plots.forEach(p => {
+                const pricePerSotka = Math.round(p.price / p.sot);
+                const ratio = (p.price / p.cadCost).toFixed(1);
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td><b>${p.id}</b></td><td>${p.cad}</td><td><a href="${p.avito}" target="_blank">Avito</a></td><td><a href="${p.pmap}" target="_blank">ПКК</a></td><td>${p.sot}</td><td>${p.price.toLocaleString('ru-RU')} ₽</td><td>${pricePerSotka.toLocaleString('ru-RU')} ₽ <small style="color:#888">(×${ratio})</small></td><td>${p.status}</td><td>${p.addr}</td><td>${p.area}</td><td>${p.date}</td><td>${p.cadCost.toLocaleString('ru-RU')} ₽</td>`;
+                tbody.appendChild(tr);
             });
 
-            const marker = L.marker([p.lat, p.lng], { icon: icon });
+            // ===== CHARTS =====
+            new Chart(document.getElementById('chartPricePerSotka'), {
+                type: 'bar',
+                data: {
+                    labels: plots.map(p => `№${p.id} (${p.sot} сот.)`),
+                    datasets: [{
+                        label: 'Цена за сотку (руб.)',
+                        data: plots.map(p => Math.round(p.price / p.sot)),
+                        backgroundColor: plots.map(p => priceColor(p.price)),
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { ticks: { callback: v => Math.round(v).toLocaleString('ru-RU') + ' ₽' } } }
+                }
+            });
 
-            marker.bindPopup(`
-                <b>Участок №${p.id} — ${p.cad}</b><br><br>
-                <b>Цена:</b> ${p.price.toLocaleString('ru-RU')} ₽<br>
-                <b>Площадь:</b> ${p.sot} сот. (${p.area})<br>
-                <b>Цена/сотка:</b> ${pricePerSotka.toLocaleString('ru-RU')} ₽<br>
-                <b>Кад. стоимость:</b> ${p.cadCost.toLocaleString('ru-RU')} ₽<br>
-                <b>Адрес:</b> ${p.addr}<br>
-                <b>Дата КН:</b> ${p.date}<br><br>
-                <a href="${p.avito}" target="_blank">📋 Avito</a> &nbsp;
-                <a href="${p.pmap}" target="_blank">🗺️ Кадастровая карта</a>
-            `, { maxWidth: 320 });
+            new Chart(document.getElementById('chartCompare'), {
+                type: 'bar',
+                data: {
+                    labels: plots.map(p => `№${p.id}`),
+                    datasets: [
+                        { label: 'Цена продавца', data: plots.map(p => p.price), backgroundColor: '#2980b9', borderRadius: 4 },
+                        { label: 'Кадастровая стоимость', data: plots.map(p => p.cadCost), backgroundColor: '#bdc3c7', borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: true,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 14, padding: 16, font: { size: 11 } } } },
+                    scales: { y: { ticks: { callback: v => Math.round(v).toLocaleString('ru-RU') + ' ₽' } } }
+                }
+            });
 
-            markers.addLayer(marker);
-        });
+            // ===== LEAFLET MAP (OpenStreetMap) =====
+            const map = L.map('map').setView([58.480, 49.552], 14);
 
-        map.addLayer(markers);
-        if (plots.length > 0) {
-            const bounds = markers.getBounds();
-            if (bounds.isValid()) {
-                map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 19
+            }).addTo(map);
+
+            const markers = L.markerClusterGroup({
+                disableClusteringAtZoom: 16,
+                maxClusterRadius: 60
+            });
+
+            plots.forEach(p => {
+                const color = priceColor(p.price);
+                const pricePerSotka = Math.round(p.price / p.sot);
+
+                const icon = L.divIcon({
+                    className: 'custom-marker',
+                    html: `<div style="
+                        width:24px;height:24px;border-radius:50%;
+                        background:${color};border:3px solid white;
+                        box-shadow: 0 1px 6px rgba(0,0,0,0.4);
+                        "></div>`,
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12],
+                    popupAnchor: [0, -14]
+                });
+
+                const marker = L.marker([p.lat, p.lng], { icon: icon });
+
+                marker.bindPopup(`
+                    <b>Участок №${p.id} — ${p.cad}</b><br><br>
+                    <b>Цена:</b> ${p.price.toLocaleString('ru-RU')} ₽<br>
+                    <b>Площадь:</b> ${p.sot} сот. (${p.area})<br>
+                    <b>Цена/сотка:</b> ${pricePerSotka.toLocaleString('ru-RU')} ₽<br>
+                    <b>Кад. стоимость:</b> ${p.cadCost.toLocaleString('ru-RU')} ₽<br>
+                    <b>Адрес:</b> ${p.addr}<br>
+                    <b>Дата КН:</b> ${p.date}<br><br>
+                    <a href="${p.avito}" target="_blank">📋 Avito</a> &nbsp;
+                    <a href="${p.pmap}" target="_blank">🗺️ Кадастровая карта</a>
+                `, { maxWidth: 320 });
+
+                markers.addLayer(marker);
+            });
+
+            map.addLayer(markers);
+            if (plots.length > 0) {
+                const bounds = markers.getBounds();
+                if (bounds.isValid()) {
+                    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+                }
             }
         }
+
+        init();
     </script>
 </body>
 
