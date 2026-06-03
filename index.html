@@ -457,6 +457,7 @@
 
             #map {
                 height: 200px;
+                max-height: 50vh;
             }
 
             .header {
@@ -488,6 +489,7 @@
         @media (max-width: 480px) {
             #map {
                 height: 140px;
+                max-height: 50vh;
             }
 
             .header {
@@ -633,6 +635,20 @@
         const FIELD_KEYS = ['кад', 'авито', 'пкк', 'широта', 'долгота', 'площадь_сот', 'цена', 'статус', 'адрес', 'площадь_квм', 'дата_кн', 'кадастровая_стоимость', 'категория_земель', 'вид_использования', 'форма_собственности', 'примечания'];
         const FIELD_LABELS = ['Кадастровый номер', 'Avito (ссылка)', 'ПКК (ссылка)', 'Широта', 'Долгота', 'Площадь (сот.)', 'Цена (руб.)', 'Статус', 'Адрес', 'Площадь (кв.м)', 'Дата КН', 'Кадастровая стоимость', 'Категория земель', 'Вид использования', 'Форма собственности', 'Примечания'];
 
+        // ===== DATE CONVERTER =====
+        function convertDate(val) {
+            if (!val) return '';
+            const num = parseFloat(val);
+            if (!isNaN(num) && num > 30000 && num < 100000) {
+                const d = new Date((num - 25569) * 86400 * 1000);
+                const day = String(d.getDate()).padStart(2, '0');
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const year = d.getFullYear();
+                return day + '.' + month + '.' + year;
+            }
+            return String(val).trim();
+        }
+
         // ===== DATA LOADER: GET from Apps Script =====
         async function loadPlots() {
             try {
@@ -652,7 +668,7 @@
                     status: r.статус || '',
                     addr: r.адрес || '',
                     area: (r.площадь_квм || '') + ' кв. м',
-                    date: r.дата_кн || '',
+                    date: convertDate(r.дата_кн),
                     cadCost: parseFloat(r.кадастровая_стоимость) || 0,
                     category: r.категория_земель || '',
                     useType: r.вид_использования || '',
