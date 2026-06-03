@@ -5,8 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Земельные участки — д. Головизнинцы</title>
-    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey=3dc2a6bb-4e55-48b7-8ab0-aa70d46ee3cb"
-        type="text/javascript"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * {
@@ -129,10 +132,6 @@
 
         td a:hover {
             text-decoration: underline;
-        }
-
-        [class*="ymaps-"][class*="-copyrights-pane"] {
-            display: none !important;
         }
 
         @media (max-width: 800px) {
@@ -260,52 +259,59 @@
             }
         });
 
-        // ===== YANDEX MAP =====
-        ymaps.ready(function () {
-            const map = new ymaps.Map('map', {
-                center: [58.480, 49.552],
-                zoom: 14,
-                controls: ['typeSelector', 'zoomControl', 'fullscreenControl']
+        // ===== LEAFLET MAP (OpenStreetMap) =====
+        const map = L.map('map').setView([58.480, 49.552], 14);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        const markers = L.markerClusterGroup({
+            disableClusteringAtZoom: 16,
+            maxClusterRadius: 60
+        });
+
+        plots.forEach(p => {
+            const color = priceColor(p.price);
+            const pricePerSotka = Math.round(p.price / p.sot);
+
+            const icon = L.divIcon({
+                className: 'custom-marker',
+                html: `<div style="
+                    width:24px;height:24px;border-radius:50%;
+                    background:${color};border:3px solid white;
+                    box-shadow: 0 1px 6px rgba(0,0,0,0.4);
+                    "></div>`,
+                iconSize: [24, 24],
+                iconAnchor: [12, 12],
+                popupAnchor: [0, -14]
             });
 
-            // Clusterer for markers
-            const clusterer = new ymaps.Clusterer({
-                preset: 'islands#clusterIcons',
-                clusterDisableClickZoom: true,
-                clusterOpenBalloonOnClick: true
-            });
+            const marker = L.marker([p.lat, p.lng], { icon: icon });
 
-            const placemarks = [];
-            plots.forEach(p => {
-                const color = priceColor(p.price);
-
-                const placemark = new ymaps.Placemark([p.lat, p.lng], {
-                    balloonContentHeader: `<b>Участок №${p.id} — ${p.cad}</b>`,
-                    balloonContentBody: `
+            marker.bindPopup(`
+                <b>Участок №${p.id} — ${p.cad}</b><br><br>
                 <b>Цена:</b> ${p.price.toLocaleString('ru-RU')} ₽<br>
                 <b>Площадь:</b> ${p.sot} сот. (${p.area})<br>
-                <b>Цена/сотка:</b> ${Math.round(p.price / p.sot).toLocaleString('ru-RU')} ₽<br>
+                <b>Цена/сотка:</b> ${pricePerSotka.toLocaleString('ru-RU')} ₽<br>
                 <b>Кад. стоимость:</b> ${p.cadCost.toLocaleString('ru-RU')} ₽<br>
                 <b>Адрес:</b> ${p.addr}<br>
-                <b>Дата КН:</b> ${p.date}<br>
-            `,
-                    balloonContentFooter: `
+                <b>Дата КН:</b> ${p.date}<br><br>
                 <a href="${p.avito}" target="_blank">📋 Avito</a> &nbsp;
                 <a href="${p.pmap}" target="_blank">🗺️ Кадастровая карта</a>
-            `
-                }, {
-                    preset: 'islands#circleIcon',
-                    iconColor: color
-                });
+            `, { maxWidth: 320 });
 
-                placemarks.push(placemark);
-            });
-
-            map.geoObjects.add(placemarks);
-            if (placemarks.length > 0) {
-                map.setBounds(map.geoObjects.getBounds(), { checkZoomRange: true, zoomMargin: 50 });
-            }
+            markers.addLayer(marker);
         });
+
+        map.addLayer(markers);
+        if (plots.length > 0) {
+            const bounds = markers.getBounds();
+            if (bounds.isValid()) {
+                map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+            }
+        }
     </script>
 </body>
 
