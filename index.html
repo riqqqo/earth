@@ -192,46 +192,41 @@
     </div>
 
     <script>
-        // ===== PARSER: load data from земельные-участки.md =====
+        // ===== PARSER: load data from data.md =====
         async function loadPlots() {
-            const resp = await fetch('земельные-участки.md');
+            const resp = await fetch('data.md');
             const text = await resp.text();
             const lines = text.split('\n');
 
-            // Find the table separator line (contains |---|---|...)
-            let sepIdx = -1;
+            // Skip frontmatter (---) and header/separator, find first data line
+            let dataStart = -1;
             for (let i = 0; i < lines.length; i++) {
-                if (/^\|[\s\-:|]+\|/.test(lines[i])) { sepIdx = i; break; }
+                if (/^\d+\s*\|/.test(lines[i].trim())) { dataStart = i; break; }
             }
-            if (sepIdx === -1) return [];
-
-            const parseCell = (s) => s.replace(/^\s*\|\s*/, '').replace(/\s*\|\s*$/, '').trim();
-            const parseLink = (s) => { const m = s.match(/\[.*?\]\((.*?)\)/); return m ? m[1] : ''; };
-            const parseNumber = (s) => parseFloat(s.replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
-            const parseIntSafe = (s) => parseInt(s.replace(/[^\d]/g, ''), 10) || 0;
+            if (dataStart === -1) return [];
 
             const plots = [];
-            for (let i = sepIdx + 1; i < lines.length; i++) {
+            for (let i = dataStart; i < lines.length; i++) {
                 const line = lines[i].trim();
-                if (!line.startsWith('|')) continue;
-                const cells = line.split('|');
-                // cells[0] empty before first |, [2]=№, [3]=cad, [4]=Avito link, [5]=map link, [6]=coordinates, [7]=sot, [8]=price, [9]=status, [10]=category, [11]=use, [12]=ownership, [13]=addr, [14]=area, [15]=date, [16]=cadCost, [17]=note
-                if (cells.length < 17) continue;
+                if (!/^\d+\s*\|/.test(line)) continue;
+                const cells = line.split('|').map(c => c.trim());
+                // [0]=№, [1]=кад, [2]=авито, [3]=пкк, [4]=широта, [5]=долгота, [6]=сот, [7]=цена, [8]=статус, [9]=адрес, [10]=квм, [11]=дата, [12]=кад.стоимость
+                if (cells.length < 13) continue;
 
-                const id = parseIntSafe(cells[2]); if (!id) continue;
-                const cad = parseCell(cells[3]);
-                const avito = parseLink(cells[4]);
-                const pmap = parseLink(cells[5]);
-                const coords = parseCell(cells[6]).split(/[,\s]+/);
-                const lat = parseFloat(coords[0]); const lng = parseFloat(coords[1]);
+                const id = parseInt(cells[0], 10); if (!id) continue;
+                const cad = cells[1];
+                const avito = cells[2];
+                const pmap = cells[3];
+                const lat = parseFloat(cells[4]);
+                const lng = parseFloat(cells[5]);
                 if (!lat || !lng) continue;
-                const sot = parseNumber(cells[7]);
-                const price = parseIntSafe(cells[8]);
-                const status = parseCell(cells[9]);
-                const addr = parseCell(cells[13]);
-                const area = parseCell(cells[14]);
-                const date = parseCell(cells[15]);
-                const cadCost = parseIntSafe(cells[16]);
+                const sot = parseFloat(cells[6]) || 0;
+                const price = parseInt(cells[7].replace(/\s/g, ''), 10) || 0;
+                const status = cells[8];
+                const addr = cells[9];
+                const area = cells[10] + ' кв. м';
+                const date = cells[11];
+                const cadCost = parseInt(cells[12].replace(/\s/g, ''), 10) || 0;
 
                 plots.push({ id, cad, avito, pmap, lat, lng, sot, price, status, addr, area, date, cadCost });
             }
@@ -241,7 +236,7 @@
         // ===== INIT =====
         async function init() {
             const plots = await loadPlots();
-            if (!plots.length) { document.body.innerHTML += '<p style="padding:20px;color:red">⚠ Ошибка загрузки данных из земельные-участки.md</p>'; return; }
+            if (!plots.length) { document.body.innerHTML += '<p style="padding:20px;color:red">⚠ Ошибка загрузки данных из data.md</p>'; return; }
 
             const prices = plots.map(p => p.price);
             const minPrice = Math.min(...prices);
