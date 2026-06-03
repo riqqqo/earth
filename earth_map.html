@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Земельные участки — д. Головизнинцы</title>
+    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey=3dc2a6bb-4e55-48b7-8ab0-aa70d46ee3cb"
+        type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f0f2f5;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a5276, #2980b9);
+            color: white;
+            padding: 20px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            margin-bottom: 4px;
+        }
+
+        .header p {
+            opacity: 0.85;
+            font-size: 14px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        #map {
+            height: 650px;
+            flex: 1 1 800px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .charts-panel {
+            flex: 1 1 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .chart-box {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .chart-box h3 {
+            font-size: 15px;
+            margin-bottom: 10px;
+            color: #1a5276;
+        }
+
+        .chart-box canvas {
+            max-height: 250px;
+        }
+
+        .table-box {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            overflow-x: auto;
+        }
+
+        .table-box h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: #1a5276;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th {
+            background: #1a5276;
+            color: white;
+            padding: 10px 8px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:hover td {
+            background: #eaf2f8;
+        }
+
+        td a {
+            color: #2980b9;
+            text-decoration: none;
+        }
+
+        td a:hover {
+            text-decoration: underline;
+        }
+
+        [class*="ymaps-"][class*="-copyrights-pane"] {
+            display: none !important;
+        }
+
+        @media (max-width: 800px) {
+            .row {
+                flex-direction: column;
+            }
+
+            #map {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>📍 Земельные участки — д. Головизнинцы</h1>
+        <p>Кировская область, Кирово-Чепецкий район | 10 участков ИЖС</p>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div id="map"></div>
+            <div class="charts-panel">
+                <div class="chart-box">
+                    <h3>💰 Цена за сотку (руб.)</h3>
+                    <canvas id="chartPricePerSotka"></canvas>
+                </div>
+                <div class="chart-box">
+                    <h3>📊 Цена продавца vs Кадастровая стоимость</h3>
+                    <canvas id="chartCompare"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="table-box">
+            <h3>📋 Таблица участков</h3>
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th>№</th>
+                        <th>Кадастровый номер</th>
+                        <th>Avito</th>
+                        <th>Карта</th>
+                        <th>Площадь (сот.)</th>
+                        <th>Цена (руб.)</th>
+                        <th>Цена/сотка</th>
+                        <th>Статус</th>
+                        <th>Адрес</th>
+                        <th>Уточн. площадь</th>
+                        <th>Дата КН</th>
+                        <th>Кад. стоимость</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const plots = [
+            { id: 1, cad: "43:12:330132:2032", avito: "https://www.avito.ru/kirovskaya_oblast_kirov/zemelnye_uchastki/uchastok_10_sot._izhs_7582262618", pmap: "https://map.ru/pkk?kad=43:12:330132:2032&z=18", lat: 58.478476, lng: 49.551543, sot: 10, price: 550000, status: "Учтённый", addr: "д. Головизнинцы, ул. Евгения Фёдорова", area: "1 000 кв. м", date: "02.12.2024", cadCost: 125845 },
+            { id: 2, cad: "43:12:330132:2083", avito: "https://www.avito.ru/kirovskaya_oblast_kirov/zemelnye_uchastki/uchastok_128_sot._izhs_7532030909", pmap: "https://map.ru/pkk?kad=43:12:330132:2083&z=18", lat: 58.486355, lng: 49.541945, sot: 12.8, price: 640000, status: "Учтённый", addr: "Кирово-Чепецкий р-н, с.п. Пасеговское", area: "1 280 кв. м", date: "15.08.2025", cadCost: 167048 },
+            { id: 3, cad: "43:12:330132:1715", avito: "https://www.avito.ru/kirovskaya_oblast_kirov/zemelnye_uchastki/uchastok_18_sot._izhs_4052448444", pmap: "https://map.ru/pkk?kad=43:12:330132:1715&z=18", lat: 58.476061, lng: 49.552014, sot: 18, price: 650000, status: "Учтённый", addr: "д. Головизнинцы, ул. Алексея Трёшникова, з/у 18", area: "1 803 кв. м", date: "25.05.2021", cadCost: 213285 },
+            { id: 4, cad: "43:12:330132:1717", avito: "https://www.avito.ru/kirovskaya_oblast_kirov/zemelnye_uchastki/uchastok_18_sot._izhs_4052448444", pmap: "https://map.ru/pkk?kad=43:12:330132:1717&z=18", lat: 58.475807, lng: 49.552619, sot: 18, price: 650000, status: "Учтённый", addr: "д. Головизнинцы, ул. Алексея Трёшникова, з/у 20", area: "1 912 кв. м", date: "25.05.2021", cadCost: 226179 },
+            { id: 5, cad: "43:12:330132:1713", avito: "https://www.avito.ru/kirovskaya_oblast_kirov/zemelnye_uchastki/uchastok_18_sot._izhs_8142920212", pmap: "https://map.ru/pkk?kad=43:12:330132:1713&z=18", lat: 58.476544, lng: 49.550865, sot: 18, price: 670000, status: "Учтённый", addr: "д. Головизнинцы, ул. Алексея Трёшникова, з/у 14", area: "1 829 кв. м", date: "25.05.2021", cadCost: 216361 },
+            { id: 6, cad: "43:12:330132:1737", avito: "https://www.avito.ru/kirovskaya_oblast_kirov/zemelnye_uchastki/uchastok_15_sot._izhs_7600315287", pmap: "https://map.ru/pkk?kad=43:12:330132:1737&z=18", lat: 58.479417, lng: 49.557314, sot: 15, price: 700000, status: "Учтённый", addr: "д. Головизнинцы, ул. Василия Сидорова, з/у 11", area: "1 500 кв. м", date: "25.05.2021", cadCost: 188768 },
+            { id: 7, cad: "43:12:330132:1712", avito: "https://www.avito.ru/kirovskaya_oblast_kirov/zemelnye_uchastki/uchastok_20_sot._izhs_3008970358", pmap: "https://map.ru/pkk?kad=43:12:330132:1712&z=18", lat: 58.476788, lng: 49.550295, sot: 20, price: 799000, status: "Учтённый", addr: "д. Головизнинцы, ул. Алексея Трёшникова, з/у 12", area: "1 850 кв. м", date: "25.05.2021", cadCost: 218845 },
+            { id: 8, cad: "43:12:330132:1708", avito: "https://www.avito.ru/kirovskaya_oblast_kirov/zemelnye_uchastki/uchastok_20_sot._izhs_3008970358", pmap: "https://map.ru/pkk?kad=43:12:330132:1708&z=18", lat: 58.477759, lng: 49.548031, sot: 20, price: 799000, status: "Учтённый", addr: "д. Головизнинцы, ул. Алексея Трёшникова, з/у 4", area: "1 822 кв. м", date: "25.05.2021", cadCost: 215533 },
+            { id: 9, cad: "43:12:330132:1739", avito: "https://www.avito.ru/kirovskaya_oblast_kirov/zemelnye_uchastki/uchastok_215_sot._izhs_7373227431", pmap: "https://map.ru/pkk?kad=43:12:330132:1739&z=18", lat: 58.479052, lng: 49.558543, sot: 21.5, price: 890000, status: "Учтённый", addr: "д. Головизнинцы, ул. Василия Сидорова, з/у 15", area: "2 156 кв. м", date: "25.05.2021", cadCost: 255043 },
+            { id: 10, cad: "43:12:330132:915", avito: "https://www.avito.ru/kirovskaya_oblast_kirov/zemelnye_uchastki/uchastok_20_sot._izhs_7246099205", pmap: "https://map.ru/pkk?kad=43:12:330132:915&z=18", lat: 58.496812, lng: 49.550843, sot: 20, price: 950000, status: "Учтённый", addr: "Кировская обл., Кирово-Чепецкий р-н, д. Головизнинцы", area: "1 997 кв. м", date: "19.02.2016", cadCost: 236234 },
+        ];
+
+        const prices = plots.map(p => p.price);
+        const minPrice = Math.min(...prices);
+        const maxPrice = Math.max(...prices);
+
+        function priceColor(price) {
+            const t = (price - minPrice) / (maxPrice - minPrice || 1);
+            return `hsl(${Math.round(120 * (1 - t))}, 70%, 45%)`;
+        }
+
+        // ===== TABLE =====
+        const tbody = document.querySelector('#dataTable tbody');
+        plots.forEach(p => {
+            const pricePerSotka = Math.round(p.price / p.sot);
+            const ratio = (p.price / p.cadCost).toFixed(1);
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td><b>${p.id}</b></td><td>${p.cad}</td><td><a href="${p.avito}" target="_blank">Avito</a></td><td><a href="${p.pmap}" target="_blank">ПКК</a></td><td>${p.sot}</td><td>${p.price.toLocaleString('ru-RU')} ₽</td><td>${pricePerSotka.toLocaleString('ru-RU')} ₽ <small style="color:#888">(×${ratio})</small></td><td>${p.status}</td><td>${p.addr}</td><td>${p.area}</td><td>${p.date}</td><td>${p.cadCost.toLocaleString('ru-RU')} ₽</td>`;
+            tbody.appendChild(tr);
+        });
+
+        // ===== CHARTS =====
+        new Chart(document.getElementById('chartPricePerSotka'), {
+            type: 'bar',
+            data: {
+                labels: plots.map(p => `№${p.id} (${p.sot} сот.)`),
+                datasets: [{
+                    label: 'Цена за сотку (руб.)',
+                    data: plots.map(p => Math.round(p.price / p.sot)),
+                    backgroundColor: plots.map(p => priceColor(p.price)),
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { ticks: { callback: v => Math.round(v).toLocaleString('ru-RU') + ' ₽' } } }
+            }
+        });
+
+        new Chart(document.getElementById('chartCompare'), {
+            type: 'bar',
+            data: {
+                labels: plots.map(p => `№${p.id}`),
+                datasets: [
+                    { label: 'Цена продавца', data: plots.map(p => p.price), backgroundColor: '#2980b9', borderRadius: 4 },
+                    { label: 'Кадастровая стоимость', data: plots.map(p => p.cadCost), backgroundColor: '#bdc3c7', borderRadius: 4 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: true,
+                plugins: { legend: { position: 'bottom', labels: { boxWidth: 14, padding: 16, font: { size: 11 } } } },
+                scales: { y: { ticks: { callback: v => Math.round(v).toLocaleString('ru-RU') + ' ₽' } } }
+            }
+        });
+
+        // ===== YANDEX MAP =====
+        ymaps.ready(function () {
+            const map = new ymaps.Map('map', {
+                center: [58.480, 49.552],
+                zoom: 14,
+                controls: ['typeSelector', 'zoomControl', 'fullscreenControl']
+            });
+
+            // Clusterer for markers
+            const clusterer = new ymaps.Clusterer({
+                preset: 'islands#clusterIcons',
+                clusterDisableClickZoom: true,
+                clusterOpenBalloonOnClick: true
+            });
+
+            const placemarks = [];
+            plots.forEach(p => {
+                const color = priceColor(p.price);
+
+                const placemark = new ymaps.Placemark([p.lat, p.lng], {
+                    balloonContentHeader: `<b>Участок №${p.id} — ${p.cad}</b>`,
+                    balloonContentBody: `
+                <b>Цена:</b> ${p.price.toLocaleString('ru-RU')} ₽<br>
+                <b>Площадь:</b> ${p.sot} сот. (${p.area})<br>
+                <b>Цена/сотка:</b> ${Math.round(p.price / p.sot).toLocaleString('ru-RU')} ₽<br>
+                <b>Кад. стоимость:</b> ${p.cadCost.toLocaleString('ru-RU')} ₽<br>
+                <b>Адрес:</b> ${p.addr}<br>
+                <b>Дата КН:</b> ${p.date}<br>
+            `,
+                    balloonContentFooter: `
+                <a href="${p.avito}" target="_blank">📋 Avito</a> &nbsp;
+                <a href="${p.pmap}" target="_blank">🗺️ Кадастровая карта</a>
+            `
+                }, {
+                    preset: 'islands#circleIcon',
+                    iconColor: color
+                });
+
+                placemarks.push(placemark);
+            });
+
+            map.geoObjects.add(placemarks);
+            if (placemarks.length > 0) {
+                map.setBounds(map.geoObjects.getBounds(), { checkZoomRange: true, zoomMargin: 50 });
+            }
+        });
+    </script>
+</body>
+
+</html>
