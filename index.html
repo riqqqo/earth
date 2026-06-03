@@ -208,30 +208,30 @@
             const parseCell = (s) => s.replace(/^\s*\|\s*/, '').replace(/\s*\|\s*$/, '').trim();
             const parseLink = (s) => { const m = s.match(/\[.*?\]\((.*?)\)/); return m ? m[1] : ''; };
             const parseNumber = (s) => parseFloat(s.replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
-            const parseInt = (s) => parseInt(s.replace(/[^\d]/g, ''), 10) || 0;
+            const parseIntSafe = (s) => parseInt(s.replace(/[^\d]/g, ''), 10) || 0;
 
             const plots = [];
             for (let i = sepIdx + 1; i < lines.length; i++) {
                 const line = lines[i].trim();
                 if (!line.startsWith('|')) continue;
                 const cells = line.split('|');
-                // cells[0] empty, [1]=№, [2]=cad, [3]=Avito link, [4]=map link, [5]=coordinates, [6]=sot, [7]=price, [8]=status, [9]=category, [10]=use, [11]=ownership, [12]=addr, [13]=area, [14]=date, [15]=cadCost, [16]=note
-                if (cells.length < 16) continue;
+                // cells[0] empty before first |, [2]=№, [3]=cad, [4]=Avito link, [5]=map link, [6]=coordinates, [7]=sot, [8]=price, [9]=status, [10]=category, [11]=use, [12]=ownership, [13]=addr, [14]=area, [15]=date, [16]=cadCost, [17]=note
+                if (cells.length < 17) continue;
 
-                const id = parseInt(cells[1]); if (!id) continue;
-                const cad = parseCell(cells[2]);
-                const avito = parseLink(cells[3]);
-                const pmap = parseLink(cells[4]);
-                const coords = parseCell(cells[5]).split(/[,\s]+/);
+                const id = parseIntSafe(cells[2]); if (!id) continue;
+                const cad = parseCell(cells[3]);
+                const avito = parseLink(cells[4]);
+                const pmap = parseLink(cells[5]);
+                const coords = parseCell(cells[6]).split(/[,\s]+/);
                 const lat = parseFloat(coords[0]); const lng = parseFloat(coords[1]);
                 if (!lat || !lng) continue;
-                const sot = parseNumber(cells[6]);
-                const price = parseInt(cells[7]);
-                const status = parseCell(cells[8]);
-                const addr = parseCell(cells[12]);
-                const area = parseCell(cells[13]);
-                const date = parseCell(cells[14]);
-                const cadCost = parseInt(cells[15]);
+                const sot = parseNumber(cells[7]);
+                const price = parseIntSafe(cells[8]);
+                const status = parseCell(cells[9]);
+                const addr = parseCell(cells[13]);
+                const area = parseCell(cells[14]);
+                const date = parseCell(cells[15]);
+                const cadCost = parseIntSafe(cells[16]);
 
                 plots.push({ id, cad, avito, pmap, lat, lng, sot, price, status, addr, area, date, cadCost });
             }
