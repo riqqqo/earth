@@ -94,10 +94,33 @@
             overflow-x: auto;
         }
 
-        .table-box h3 {
-            font-size: 16px;
+        .table-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .table-header-row h3 {
+            font-size: 16px;
             color: #1a5276;
+        }
+
+        .btn-add {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .btn-add:hover {
+            background: #219a52;
         }
 
         table {
@@ -119,6 +142,7 @@
         td {
             padding: 8px;
             border-bottom: 1px solid #e0e0e0;
+            vertical-align: middle;
         }
 
         tr:hover td {
@@ -143,10 +167,54 @@
             cursor: pointer;
             font-size: 12px;
             white-space: nowrap;
+            display: inline-block;
         }
 
         .btn-detail:hover {
             background: #1a5276;
+        }
+
+        .btn-edit {
+            background: #f39c12;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            white-space: nowrap;
+            display: inline-block;
+            margin-right: 4px;
+        }
+
+        .btn-edit:hover {
+            background: #d68910;
+        }
+
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            white-space: nowrap;
+            display: inline-block;
+            margin-left: 4px;
+        }
+
+        .btn-delete:hover {
+            background: #c0392b;
+        }
+
+        .actions-cell {
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .detail-cell {
+            text-align: center;
         }
 
         /* ===== MODAL ===== */
@@ -171,7 +239,7 @@
             background: white;
             border-radius: 12px;
             padding: 24px;
-            max-width: 500px;
+            max-width: 560px;
             width: 90%;
             max-height: 85vh;
             overflow-y: auto;
@@ -239,13 +307,72 @@
             text-decoration: underline;
         }
 
+        /* ===== EDIT FORM ===== */
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 3px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 7px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 50px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .btn-submit {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .btn-submit:hover {
+            background: #219a52;
+        }
+
+        .btn-submit:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+
         @media (max-width: 800px) {
             .row {
                 flex-direction: column;
             }
 
             #map {
-                height: 350px;
+                height: 300px;
             }
 
             .header {
@@ -267,11 +394,16 @@
             .chart-box canvas {
                 max-height: 200px;
             }
+
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
         }
 
         @media (max-width: 480px) {
             #map {
-                height: 280px;
+                height: 250px;
             }
 
             .header {
@@ -311,7 +443,7 @@
                 padding: 10px;
             }
 
-            .table-box h3 {
+            .table-header-row h3 {
                 font-size: 14px;
             }
 
@@ -328,8 +460,16 @@
             }
 
             td a,
-            .btn-detail {
+            .btn-detail,
+            .btn-edit,
+            .btn-delete {
                 font-size: 10px;
+                padding: 4px 8px;
+            }
+
+            .btn-add {
+                font-size: 12px;
+                padding: 6px 12px;
             }
         }
     </style>
@@ -339,7 +479,7 @@
 
     <div class="header">
         <h1>📍 Земельные участки — д. Головизнинцы</h1>
-        <p>Кировская область, Кирово-Чепецкий район | 10 участков ИЖС</p>
+        <p>Кировская область, Кирово-Чепецкий район | <span id="plotCount">...</span> участков ИЖС</p>
     </div>
 
     <div class="container">
@@ -357,7 +497,10 @@
             </div>
         </div>
         <div class="table-box">
-            <h3>📋 Таблица участков</h3>
+            <div class="table-header-row">
+                <h3>📋 Таблица участков</h3>
+                <button class="btn-add" onclick="openEditForm(null)">＋ Добавить участок</button>
+            </div>
             <table id="dataTable">
                 <thead>
                     <tr>
@@ -369,6 +512,7 @@
                         <th>Цена (руб.)</th>
                         <th>Цена/сотка</th>
                         <th>Детальная информация</th>
+                        <th>Действия</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -376,46 +520,50 @@
         </div>
     </div>
 
-    <!-- MODAL -->
+    <!-- DETAIL MODAL -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal" id="modalContent"></div>
     </div>
 
+    <!-- EDIT MODAL -->
+    <div class="modal-overlay" id="editModalOverlay">
+        <div class="modal" id="editModalContent"></div>
+    </div>
+
     <script>
-        // ===== PARSER: load data from data.md =====
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSjNOm1Jf9AgCfVyY3cTa65INB_BNMSrUKIyDFZmm9ZTf999_hTxEERe3GVgvkDRsP0_N3n7tNcnY54/pub?output=csv';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyYMMMQSLxvQlyMG-2f83VeA8OdhkrtjM7DhaC4HWtTfr0xMEVp3CPMyVcJW2rKPBNX/exec';
+
+        const FIELD_KEYS = ['кад', 'авито', 'пкк', 'широта', 'долгота', 'площадь_сот', 'цена', 'статус', 'адрес', 'площадь_квм', 'дата_кн', 'кадастровая_стоимость', 'категория_земель', 'вид_использования', 'форма_собственности', 'примечания'];
+        const FIELD_LABELS = ['Кадастровый номер', 'Avito (ссылка)', 'ПКК (ссылка)', 'Широта', 'Долгота', 'Площадь (сот.)', 'Цена (руб.)', 'Статус', 'Адрес', 'Площадь (кв.м)', 'Дата КН', 'Кадастровая стоимость', 'Категория земель', 'Вид использования', 'Форма собственности', 'Примечания'];
+
+        // ===== CSV PARSER =====
         async function loadPlots() {
-            const resp = await fetch('data.md');
+            const resp = await fetch(CSV_URL, { cache: 'no-store' });
             const text = await resp.text();
-            const lines = text.split('\n');
+            const lines = text.trim().split('\n');
+            if (lines.length < 2) return [];
 
-            let dataStart = -1;
-            for (let i = 0; i < lines.length; i++) {
-                if (/^\d+\s*\|/.test(lines[i].trim())) { dataStart = i; break; }
-            }
-            if (dataStart === -1) return [];
-
+            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
             const plots = [];
-            for (let i = dataStart; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (!/^\d+\s*\|/.test(line)) continue;
-                const cells = line.split('|').map(c => c.trim());
-                // [0]=№, [1]=кад, [2]=авито, [3]=пкк, [4]=широта, [5]=долгота, [6]=сот, [7]=цена, [8]=статус, [9]=адрес, [10]=квм, [11]=дата, [12]=кад.стоимость, [13]=категория, [14]=вид использования, [15]=форма собственности, [16]=примечания
-                if (cells.length < 17) continue;
+
+            for (let i = 1; i < lines.length; i++) {
+                const cells = parseCSVLine(lines[i]);
+                if (cells.length < 13) continue;
 
                 const id = parseInt(cells[0], 10); if (!id) continue;
-                const cad = cells[1];
-                const avito = cells[2];
-                const pmap = cells[3];
-                const lat = parseFloat(cells[4]);
-                const lng = parseFloat(cells[5]);
+                const cad = cells[1] || '';
+                const avito = cells[2] || '';
+                const pmap = cells[3] || '';
+                const lat = parseFloat(cells[4]); const lng = parseFloat(cells[5]);
                 if (!lat || !lng) continue;
-                const sot = parseFloat(cells[6]) || 0;
-                const price = parseInt(cells[7].replace(/\s/g, ''), 10) || 0;
-                const status = cells[8];
-                const addr = cells[9];
-                const area = cells[10] + ' кв. м';
-                const date = cells[11];
-                const cadCost = parseInt(cells[12].replace(/\s/g, ''), 10) || 0;
+                const sot = parseFloat(cells[6].replace(',', '.')) || 0;
+                const price = parseInt((cells[7] || '0').replace(/\s/g, ''), 10) || 0;
+                const status = cells[8] || '';
+                const addr = cells[9] || '';
+                const area = (cells[10] || '') + ' кв. м';
+                const date = cells[11] || '';
+                const cadCost = parseInt((cells[12] || '0').replace(/\s/g, ''), 10) || 0;
                 const category = cells[13] || '';
                 const useType = cells[14] || '';
                 const ownership = cells[15] || '';
@@ -426,14 +574,32 @@
             return plots;
         }
 
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            for (const ch of line) {
+                if (ch === '"') {
+                    inQuotes = !inQuotes;
+                } else if (ch === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += ch;
+                }
+            }
+            result.push(current.trim());
+            return result;
+        }
+
         // ===== MODAL =====
-        function openModal(p) {
+        function openDetailModal(p) {
             const overlay = document.getElementById('modalOverlay');
             const content = document.getElementById('modalContent');
             const pricePerSotka = Math.round(p.price / p.sot);
 
             content.innerHTML = `
-                <button class="close-btn" onclick="closeModal()">&times;</button>
+                <button class="close-btn" onclick="closeDetailModal()">&times;</button>
                 <h2>Участок №${p.id} — ${p.cad}</h2>
                 <div class="detail-row"><span class="detail-label">Статус</span><span class="detail-value">${p.status}</span></div>
                 <div class="detail-row"><span class="detail-label">Адрес</span><span class="detail-value">${p.addr}</span></div>
@@ -454,58 +620,193 @@
             overlay.classList.add('active');
         }
 
-        function closeModal() {
+        function closeDetailModal() {
             document.getElementById('modalOverlay').classList.remove('active');
         }
 
-        document.getElementById('modalOverlay').addEventListener('click', function (e) {
-            if (e.target === this) closeModal();
-        });
+        // ===== EDIT FORM =====
+        function openEditForm(plot) {
+            const overlay = document.getElementById('editModalOverlay');
+            const content = document.getElementById('editModalContent');
+            const isEdit = !!plot;
+            const title = isEdit ? `Редактировать участок №${plot.id}` : 'Добавить участок';
 
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') closeModal();
-        });
+            const values = isEdit ? [
+                plot.cad, plot.avito, plot.pmap, plot.lat, plot.lng, plot.sot, plot.price, plot.status, plot.addr,
+                plot.area.replace(' кв. м', ''), plot.date, plot.cadCost,
+                plot.category, plot.useType, plot.ownership, plot.note
+            ] : ['', '', '', '', '', '', '', 'Учтённый', '', '', '', '', 'Земли населенных пунктов', 'Для индивидуального жилищного строительства', 'Частная', ''];
 
-        // ===== INIT =====
-        async function init() {
-            const plots = await loadPlots();
-            if (!plots.length) { document.body.innerHTML += '<p style="padding:20px;color:red">⚠ Ошибка загрузки данных из data.md</p>'; return; }
+            let rowsHTML = '';
+            const fieldPairs = [
+                ['кад', 'авито'], ['пкк', 'статус'], ['широта', 'долгота'],
+                ['площадь_сот', 'площадь_квм'], ['цена', 'кадастровая_стоимость'],
+                ['дата_кн', 'категория_земель'], ['вид_использования', 'форма_собственности'],
+                ['адрес', 'примечания']
+            ];
 
-            const prices = plots.map(p => p.price);
-            const minPrice = Math.min(...prices);
-            const maxPrice = Math.max(...prices);
+            for (const pair of fieldPairs) {
+                const k1 = pair[0]; const k2 = pair[1];
+                const i1 = FIELD_KEYS.indexOf(k1); const i2 = FIELD_KEYS.indexOf(k2);
+                const l1 = FIELD_LABELS[i1]; const l2 = FIELD_LABELS[i2];
+                const v1 = values[i1]; const v2 = values[i2];
 
-            // Make openModal available globally for onclick
-            window.openModal = openModal;
-            window.closeModal = closeModal;
-
-            function priceColor(price) {
-                const t = (price - minPrice) / (maxPrice - minPrice || 1);
-                return `hsl(${Math.round(120 * (1 - t))}, 70%, 45%)`;
+                if (k1 === 'примечания' || k1 === 'адрес') {
+                    rowsHTML += `<div class="form-row">
+                        <div class="form-group"><label>${l1}</label><textarea id="fld_${k1}">${escapeHtml(v1)}</textarea></div>
+                        <div class="form-group"><label>${l2}</label><textarea id="fld_${k2}">${escapeHtml(v2)}</textarea></div>
+                    </div>`;
+                } else {
+                    rowsHTML += `<div class="form-row">
+                        <div class="form-group"><label>${l1}</label><input type="text" id="fld_${k1}" value="${escapeHtml(v1)}">
+                        </div>
+                        <div class="form-group"><label>${l2}</label><input type="text" id="fld_${k2}" value="${escapeHtml(v2)}">
+                        </div>
+                    </div>`;
+                }
             }
 
-            // ===== TABLE =====
+            content.innerHTML = `
+                <button class="close-btn" onclick="closeEditForm()">&times;</button>
+                <h2>${title}</h2>
+                ${isEdit ? `<input type="hidden" id="editId" value="${plot.id}">` : ''}
+                ${rowsHTML}
+                <button class="btn-submit" id="btnSubmit" onclick="submitForm('${isEdit ? 'edit' : 'add'}')">${isEdit ? '💾 Сохранить изменения' : '➕ Добавить участок'}</button>
+                <p id="formStatus" style="text-align:center;margin-top:8px;font-size:13px;"></p>
+            `;
+            overlay.classList.add('active');
+        }
+
+        function closeEditForm() {
+            document.getElementById('editModalOverlay').classList.remove('active');
+        }
+
+        function escapeHtml(s) {
+            return String(s).replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"');
+        }
+
+        async function submitForm(action) {
+            const btn = document.getElementById('btnSubmit');
+            const status = document.getElementById('formStatus');
+            btn.disabled = true;
+            btn.textContent = '⏳ Отправка...';
+            status.textContent = '';
+
+            const data = { action: action };
+            for (const k of FIELD_KEYS) {
+                const el = document.getElementById('fld_' + k);
+                data[k] = el ? el.value : '';
+            }
+            if (action === 'edit') {
+                data.id = document.getElementById('editId').value;
+            }
+
+            try {
+                const resp = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await resp.json();
+                if (result.success) {
+                    status.textContent = action === 'add' ? '✅ Участок добавлен!' : '✅ Изменения сохранены!';
+                    status.style.color = '#27ae60';
+                    setTimeout(() => {
+                        closeEditForm();
+                        refreshAll();
+                    }, 800);
+                } else {
+                    status.textContent = '❌ Ошибка: ' + (result.error || 'неизвестная ошибка');
+                    status.style.color = '#e74c3c';
+                }
+            } catch (err) {
+                status.textContent = '❌ Ошибка соединения: ' + err.message;
+                status.style.color = '#e74c3c';
+            }
+            btn.disabled = false;
+            btn.textContent = action === 'add' ? '➕ Добавить участок' : '💾 Сохранить изменения';
+        }
+
+        // ===== OVERLAY CLICK / ESC =====
+        document.getElementById('modalOverlay').addEventListener('click', function (e) {
+            if (e.target === this) closeDetailModal();
+        });
+        document.getElementById('editModalOverlay').addEventListener('click', function (e) {
+            if (e.target === this) closeEditForm();
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                closeDetailModal();
+                closeEditForm();
+            }
+        });
+
+        // Expose globally
+        window.openDetailModal = openDetailModal;
+        window.closeDetailModal = closeDetailModal;
+        window.openEditForm = openEditForm;
+        window.closeEditForm = closeEditForm;
+        window.submitForm = submitForm;
+
+        // ===== GLOBAL STATE =====
+        let currentPlots = [];
+        let chart1 = null, chart2 = null;
+        let map = null;
+        let markers = null;
+
+        function priceColor(price, minPrice, maxPrice) {
+            const t = (price - minPrice) / (maxPrice - minPrice || 1);
+            return `hsl(${Math.round(120 * (1 - t))}, 70%, 45%)`;
+        }
+
+        // ===== RENDER TABLE =====
+        function renderTable(plots) {
             const tbody = document.querySelector('#dataTable tbody');
+            tbody.innerHTML = '';
+            const prices = plots.map(p => p.price);
+            const minP = Math.min(...prices);
+            const maxP = Math.max(...prices);
+
             plots.forEach(p => {
                 const pricePerSotka = Math.round(p.price / p.sot);
                 const ratio = (p.price / p.cadCost).toFixed(1);
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td><b>${p.id}</b></td><td>${p.cad}</td><td><a href="${p.avito}" target="_blank">Avito</a></td><td><a href="${p.pmap}" target="_blank">ПКК</a></td><td>${p.sot}</td><td>${p.price.toLocaleString('ru-RU')} ₽</td><td>${pricePerSotka.toLocaleString('ru-RU')} ₽ <small style="color:#888">(×${ratio})</small></td><td><button class="btn-detail" onclick="openModal(plotsData[${p.id - 1}])">Показать</button></td>`;
+                tr.innerHTML = `
+                    <td><b>${p.id}</b></td>
+                    <td>${p.cad}</td>
+                    <td><a href="${p.avito}" target="_blank">Avito</a></td>
+                    <td><a href="${p.pmap}" target="_blank">ПКК</a></td>
+                    <td>${p.sot}</td>
+                    <td>${p.price.toLocaleString('ru-RU')} ₽</td>
+                    <td>${pricePerSotka.toLocaleString('ru-RU')} ₽ <small style="color:#888">(×${ratio})</small></td>
+                    <td class="detail-cell"><button class="btn-detail" onclick="openDetailModal(currentPlots[${p.id - 1}])">Показать</button></td>
+                    <td class="actions-cell">
+                        <button class="btn-edit" onclick="openEditForm(currentPlots[${p.id - 1}])">✏️</button>
+                        <button class="btn-delete" onclick="deletePlot(${p.id})">🗑️</button>
+                    </td>`;
                 tbody.appendChild(tr);
             });
 
-            // Store globally for modal onclick
-            window.plotsData = plots;
+            document.getElementById('plotCount').textContent = plots.length;
+        }
 
-            // ===== CHARTS =====
-            new Chart(document.getElementById('chartPricePerSotka'), {
+        // ===== RENDER CHARTS =====
+        function renderCharts(plots) {
+            const prices = plots.map(p => p.price);
+            const minP = Math.min(...prices);
+            const maxP = Math.max(...prices);
+
+            if (chart1) chart1.destroy();
+            if (chart2) chart2.destroy();
+
+            chart1 = new Chart(document.getElementById('chartPricePerSotka'), {
                 type: 'bar',
                 data: {
                     labels: plots.map(p => `№${p.id} (${p.sot} сот.)`),
                     datasets: [{
                         label: 'Цена за сотку (руб.)',
                         data: plots.map(p => Math.round(p.price / p.sot)),
-                        backgroundColor: plots.map(p => priceColor(p.price)),
+                        backgroundColor: plots.map(p => priceColor(p.price, minP, maxP)),
                         borderRadius: 6
                     }]
                 },
@@ -516,7 +817,7 @@
                 }
             });
 
-            new Chart(document.getElementById('chartCompare'), {
+            chart2 = new Chart(document.getElementById('chartCompare'), {
                 type: 'bar',
                 data: {
                     labels: plots.map(p => `№${p.id}`),
@@ -531,38 +832,44 @@
                     scales: { y: { ticks: { callback: v => Math.round(v).toLocaleString('ru-RU') + ' ₽' } } }
                 }
             });
+        }
 
-            // ===== LEAFLET MAP (OpenStreetMap) =====
-            const map = L.map('map').setView([58.480, 49.552], 14);
+        // ===== RENDER MAP =====
+        function renderMap(plots) {
+            if (map) {
+                map.remove();
+                markers = null;
+            }
+
+            const prices = plots.map(p => p.price);
+            const minP = Math.min(...prices);
+            const maxP = Math.max(...prices);
+
+            map = L.map('map').setView([58.480, 49.552], 14);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
                 maxZoom: 19
             }).addTo(map);
 
-            const markers = L.markerClusterGroup({
+            markers = L.markerClusterGroup({
                 disableClusteringAtZoom: 16,
                 maxClusterRadius: 60
             });
 
             plots.forEach(p => {
-                const color = priceColor(p.price);
+                const color = priceColor(p.price, minP, maxP);
                 const pricePerSotka = Math.round(p.price / p.sot);
 
                 const icon = L.divIcon({
                     className: 'custom-marker',
-                    html: `<div style="
-                        width:24px;height:24px;border-radius:50%;
-                        background:${color};border:3px solid white;
-                        box-shadow: 0 1px 6px rgba(0,0,0,0.4);
-                        "></div>`,
+                    html: `<div style="width:24px;height:24px;border-radius:50%;background:${color};border:3px solid white;box-shadow: 0 1px 6px rgba(0,0,0,0.4);"></div>`,
                     iconSize: [24, 24],
                     iconAnchor: [12, 12],
                     popupAnchor: [0, -14]
                 });
 
                 const marker = L.marker([p.lat, p.lng], { icon: icon });
-
                 marker.bindPopup(`
                     <b>Участок №${p.id} — ${p.cad}</b><br><br>
                     <b>Цена:</b> ${p.price.toLocaleString('ru-RU')} ₽<br>
@@ -574,7 +881,6 @@
                     <a href="${p.avito}" target="_blank">📋 Avito</a> &nbsp;
                     <a href="${p.pmap}" target="_blank">🗺️ Кадастровая карта</a>
                 `, { maxWidth: 320 });
-
                 markers.addLayer(marker);
             });
 
@@ -585,6 +891,44 @@
                     map.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
                 }
             }
+        }
+
+        // ===== DELETE =====
+        async function deletePlot(id) {
+            if (!confirm(`Удалить участок №${id}? Это действие необратимо.`)) return;
+            // Send delete request to Google Script
+            try {
+                const resp = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'delete', id: id }),
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const result = await resp.json();
+                if (result.success) {
+                    alert('Участок удалён. Обновите страницу для обновления данных.');
+                } else {
+                    // If delete not supported, remove locally
+                    alert('Удаление через API не поддерживается текущим скриптом. Удалите строку в Google Таблице вручную.');
+                }
+            } catch (err) {
+                alert('Ошибка: ' + err.message + '. Удалите строку в Google Таблице вручную.');
+            }
+        }
+        window.deletePlot = deletePlot;
+
+        // ===== REFRESH ALL =====
+        async function refreshAll() {
+            const plots = await loadPlots();
+            currentPlots = plots;
+            window.currentPlots = plots;
+            renderTable(plots);
+            renderCharts(plots);
+            renderMap(plots);
+        }
+
+        // ===== INIT =====
+        async function init() {
+            await refreshAll();
         }
 
         init();
